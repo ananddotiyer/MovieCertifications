@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from joblib import Parallel, delayed
 import pandas as pd
 import requests
+requests.request
 
 
 URL = "https://www.cbfcindia.gov.in/main/search-result?movie_id={movie_id}&lang_id={lang_id}"
@@ -22,8 +23,11 @@ args = parser.parse_args()
 
 def get_movie_details(movie_id, lang_id):
     url = URL.format(movie_id=movie_id, lang_id=lang_id)
-    resp = requests.get(url)
     details = {"movie_id": movie_id, "lang_id": lang_id}
+    try:
+        resp = requests.get(url)
+    except requests.exceptions.ConnectionError:
+        return details
     try:
         resp.raise_for_status()
     except requests.exceptions.HTTPError as err:  # NOQA: F841
