@@ -1,5 +1,5 @@
 # MovieCertifications
-Scrap data on movie certifications from CBFC site
+Scrape data on movie certifications from CBFC site
 
 Step1: Download the repo into your system, into a folder of your choice.
 
