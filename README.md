@@ -3,7 +3,7 @@ Scrap data on movie certifications from CBFC site
 
 Step1: Download the repo into your system, into a folder of your choice.
 
-Step2: Open the movies.csv on a text editor/excel as you wish.  It contains a huge list of 5L+ movies.  Each row contains two pieces of information - the movie id and lang_id, as used by the CBFC site (https://www.cbfcindia.gov.in/main/)
+Step2: Open the movies.csv on a text editor/excel as you wish.  It contains a huge list of 5L+ movies.  Each row contains two pieces of information - the movie id and lang_id, as used by the [CBFC site](https://www.cbfcindia.gov.in/main/)
 
 Decide which movies you want to scrape - from and to indices.
 
