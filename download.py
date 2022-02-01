@@ -33,7 +33,7 @@ def get_movie_details(movie_id, lang_id):
     except requests.exceptions.HTTPError as err:  # NOQA: F841
         return {}
 
-    soup = BeautifulSoup(resp.content)
+    soup = BeautifulSoup(resp.content, features="lxml")
     movie_details = [each.text for each in soup.find_all("td")[1:]]
     details.update({k: v for k, v in zip(movie_details[::2], movie_details[1::2])})
     return details
