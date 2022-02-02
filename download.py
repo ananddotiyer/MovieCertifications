@@ -44,28 +44,37 @@ movies = pd.read_csv("movies.csv", index_col=["movie_id"], squeeze=True).to_dict
 start, end = map(int, args.range.split("-"))
 n_jobs = int(args.n_jobs)
 
-ids = [(k, movies[k]) for k in range(start, end + 1) if k in movies]
+#ids = [(k, movies[k]) for k in range(start, end + 1) if k in movies]
+ids = list()
+for k in range(start, end + 1):
+	if k in movies:
+		ids.append((k, movies[k]))
+	else:
+		ids.append((k, None))
+
+print(ids[:5])
 
 func = delayed(get_movie_details)
 
 batch_size = int(args.batch_size)
 print(f"Saving in batches of {batch_size}...")
-break_tag = False
-for batch in range(round(len(ids)/batch_size) + 1):	 #let it fail in last iteration
-	from_idx = batch_size * batch
-	to_idx = batch_size * (batch + 1)
-	if start + to_idx > end:
-		to_idx = end - start
-		break_tag = True
+
+iterations = len(ids)/batch_size if len(ids) % batch_size == 0 else int(len(ids)/batch_size) + 1
+print(int(iterations))
+for batch in range(int(iterations)):	 #let it fail in last iteration
+	from_idx = batch_size * batch #0, 2, 4, 6
+	to_idx = batch_size * (batch + 1) # 2, 4, 6
 	ids_batch = ids[from_idx:to_idx]
 	try:
-		if to_idx < from_idx + 1:
-			to_idx = from_idx + 1
+		start_idx = start + from_idx
+		if start + to_idx - 1 > end:
+			end_idx = end
+		else:
+			end_idx = start + to_idx - 1
+			
 		result = Parallel(n_jobs=n_jobs, verbose=10)(func(m_id, l_id) for m_id, l_id in ids_batch)
-		with open(f'movies-{start + from_idx}-{start + to_idx - 1}.json', 'w') as fout:
+		with open(f'movies-{start_idx}-{end_idx}.json', 'w') as fout:
 			json.dump(result, fout, indent=2)
-		print(f"Saved batch-{batch + 1} of all movies to movies-{start + from_idx}-{start + to_idx - 1}.json")
-		if break_tag:
-			break
+		print(f"Saved batch-{batch + 1} of all movies to movies-{start_idx}-{end_idx}.json")
 	except:
 		pass
