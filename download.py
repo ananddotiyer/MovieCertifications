@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
 import argparse
 import json
 from bs4 import BeautifulSoup
@@ -52,18 +46,15 @@ for k in range(start, end + 1):
 	else:
 		ids.append((k, None))
 
-print(ids[:5])
-
 func = delayed(get_movie_details)
 
 batch_size = int(args.batch_size)
 print(f"Saving in batches of {batch_size}...")
 
 iterations = len(ids)/batch_size if len(ids) % batch_size == 0 else int(len(ids)/batch_size) + 1
-print(int(iterations))
-for batch in range(int(iterations)):	 #let it fail in last iteration
-	from_idx = batch_size * batch #0, 2, 4, 6
-	to_idx = batch_size * (batch + 1) # 2, 4, 6
+for batch in range(int(iterations)):
+	from_idx = batch_size * batch
+	to_idx = batch_size * (batch + 1)
 	ids_batch = ids[from_idx:to_idx]
 	try:
 		start_idx = start + from_idx
