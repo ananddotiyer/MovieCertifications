@@ -62,9 +62,9 @@ for batch in range(round(len(ids)/batch_size) + 1):	 #let it fail in last iterat
 		if to_idx < from_idx + 1:
 			to_idx = from_idx + 1
 		result = Parallel(n_jobs=n_jobs, verbose=10)(func(m_id, l_id) for m_id, l_id in ids_batch)
-		with open(f'movies-{start + from_idx}-{start + to_idx}.json', 'w') as fout:
+		with open(f'movies-{start + from_idx}-{start + to_idx - 1}.json', 'w') as fout:
 			json.dump(result, fout, indent=2)
-		print(f"Saved batch-{batch + 1} of all movies to movies-{start + from_idx}-{start + to_idx}.json")
+		print(f"Saved batch-{batch + 1} of all movies to movies-{start + from_idx}-{start + to_idx - 1}.json")
 		if break_tag:
 			break
 	except:
