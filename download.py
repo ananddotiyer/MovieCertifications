@@ -4,8 +4,7 @@ from bs4 import BeautifulSoup
 from joblib import Parallel, delayed
 import pandas as pd
 import requests
-requests.request
-
+import re
 
 URL = "https://www.cbfcindia.gov.in/main/search-result?movie_id={movie_id}&lang_id={lang_id}"
 
@@ -33,8 +32,14 @@ def get_movie_details(movie_id, lang_id):
 	details.update({k: v for k, v in zip(movie_details[::2], movie_details[1::2])})
 	return details
 
+all_movies = pd.read_csv("movies.csv", index_col=["movie_id"], squeeze=True).to_dict()
+
 batch_name = args.input
-movies = pd.read_csv(batch_name, index_col=["movie_id"], squeeze=True).to_dict()
+if batch_name == "movies.csv":
+	movies = all_movies
+else:
+	with open(batch_name, 'r') as fp:
+		movies = {k:all_movies[k] for k in json.load(fp)}
 movies_present = movies.keys()
 
 start, end = map(int, args.range.split("-"))
@@ -64,8 +69,11 @@ for batch in range(int(iterations)):
 			end_idx = start + to_idx - 1
 			
 		result = Parallel(n_jobs=n_jobs, verbose=10)(func(m_id, l_id) for m_id, l_id in ids_batch if m_id in movies_present)
-		with open(f'{batch_name[:-4]}-{start_idx}-{end_idx}.json', 'w') as fout:
+		
+		output_file_name = re.findall('(.+)\..+', batch_name)[0]
+		output_file_name = f'{output_file_name}-{start_idx}-{end_idx}.json'
+		with open(output_file_name, 'w') as fout:
 			json.dump(result, fout, indent=2)
-		print(f"Saved batch-{batch + 1} of {batch_name} to movies-{start_idx}-{end_idx}.json")
+		print(f"Saved batch-{batch + 1} of {batch_name} to {output_file_name}")
 	except:
 		pass
