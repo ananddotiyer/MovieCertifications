@@ -14,8 +14,7 @@ $ pip install -r requirements.txt
 Download the repo into your system, into a folder of your choice.
 
 #### Step2: 
-Open the movies.csv on a text editor/excel as you wish.  It contains a huge list of 5L+ movies.  Each row contains two pieces of information - the movie id and lang_id, as used by the [CBFC site](https://www.cbfcindia.gov.in/main/)
-
+Open the movies.csv (alternatively, any input .json file) on a text editor/excel as you wish.  movies.csv contains a huge list of 5L+ movies, each of whose elements contain two pieces of information - the movie id and lang_id as used by the [CBFC site](https://www.cbfcindia.gov.in/main/); however, if the input is a .json file will contain only the movie-id.
 Decide which movies you want to scrape - the **_start_** and **_end_** indices.
 
 #### Step3: 
@@ -27,12 +26,19 @@ indices.  If you supply batch-size, the processing is performed in batches of <b
 $ python download.py --range <start-index>-<end-index> --batch-size=<batch-size>
 ```
 
-For example, if you want to scrape details of movies from movie ID 2 to movie ID
-102, and save them in batches of 100 movies at a time, run the following:
+For example, if you want to scrape details of movies from movie ID 2 to movie ID 102 in "movies.csv", and save them in batches of 100 movies at a time, run the following:
 
 ```bash
 $ python download.py --range 2-102 --batch-size=100
 ```
+**Note1**: By default, the input is "movies.csv".
+
+Alternatively, if you want to scrape details of movies from movie ID 2 to movie ID 102 in "anand.json", and save them in batches of 100 movies at a time, run the following:
+
+```bash
+$ python download.py --range 2-102 --batch-size=100 --input="anand.json"
+```
+Output jsons will be created for each batch in the specified range, but will include only those movies as contained in "anand.json".
 
 **Note1**: By default, the batch-size is 1000.
 

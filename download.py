@@ -4,8 +4,7 @@ from bs4 import BeautifulSoup
 from joblib import Parallel, delayed
 import pandas as pd
 import requests
-requests.request
-
+import re
 
 URL = "https://www.cbfcindia.gov.in/main/search-result?movie_id={movie_id}&lang_id={lang_id}"
 
@@ -13,8 +12,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--range")
 parser.add_argument("--n-jobs", default=-1)
 parser.add_argument("--batch-size", default=1000)
+parser.add_argument("--input", default="movies.csv")
 args = parser.parse_args()
-
 
 def get_movie_details(movie_id, lang_id):
 	url = URL.format(movie_id=movie_id, lang_id=lang_id)
@@ -33,19 +32,25 @@ def get_movie_details(movie_id, lang_id):
 	details.update({k: v for k, v in zip(movie_details[::2], movie_details[1::2])})
 	return details
 
+all_movies = pd.read_csv("movies.csv", index_col=["movie_id"], squeeze=True).to_dict()
 
-movies = pd.read_csv("movies.csv", index_col=["movie_id"], squeeze=True).to_dict()
+batch_name = args.input
+if batch_name == "movies.csv":
+	movies = all_movies
+else:
+	with open(batch_name, 'r') as fp:
+		movies = {k:all_movies[k] for k in json.load(fp)}
+movies_present = movies.keys()
+
 start, end = map(int, args.range.split("-"))
 n_jobs = int(args.n_jobs)
 
-#ids = [(k, movies[k]) for k in range(start, end + 1) if k in movies]
 ids = list()
 for k in range(start, end + 1):
-	if k in movies:
+	try:
 		ids.append((k, movies[k]))
-	else:
+	except KeyError:
 		ids.append((k, None))
-
 func = delayed(get_movie_details)
 
 batch_size = int(args.batch_size)
@@ -63,9 +68,12 @@ for batch in range(int(iterations)):
 		else:
 			end_idx = start + to_idx - 1
 			
-		result = Parallel(n_jobs=n_jobs, verbose=10)(func(m_id, l_id) for m_id, l_id in ids_batch)
-		with open(f'movies-{start_idx}-{end_idx}.json', 'w') as fout:
+		result = Parallel(n_jobs=n_jobs, verbose=10)(func(m_id, l_id) for m_id, l_id in ids_batch if m_id in movies_present)
+		
+		output_file_name = re.findall('(.+)\..+', batch_name)[0]
+		output_file_name = f'{output_file_name}-{start_idx}-{end_idx}.json'
+		with open(output_file_name, 'w') as fout:
 			json.dump(result, fout, indent=2)
-		print(f"Saved batch-{batch + 1} of all movies to movies-{start_idx}-{end_idx}.json")
+		print(f"Saved batch-{batch + 1} of {batch_name} to {output_file_name}")
 	except:
 		pass
